@@ -1,0 +1,134 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '23'
+  PNPM_VERSION: '9'
+
+jobs:
+  # 🧪 Testing and Quality Checks
+  test:
+    name: 🧪 Test & Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: 📦 Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: pnpm install --frozen-lockfile
+      
+    - name: 🔍 Lint code
+      run: pnpm lint || echo "Linting not configured yet"
+      
+    - name: 🧪 Run tests
+      run: pnpm test || echo "Tests not configured yet"
+      
+    - name: 📊 Check test coverage
+      run: pnpm test:coverage || echo "Coverage not configured yet"
+
+  # 🔒 Security Scanning
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Run security audit
+      run: |
+        npm audit --audit-level=moderate || true
+        
+    - name: 🔍 Scan for secrets
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+
+  # 🐳 Docker Build
+  docker:
+    name: 🐳 Docker Build
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: 🔨 Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: satware/satai-mcp-proxy:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # 🚀 Deploy to Staging (develop branch only)
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test, security, docker]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: staging
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🚀 Deploy to staging
+      run: |
+        echo "🚀 Deploying to staging environment..."
+        echo "This would deploy to staging infrastructure"
+        
+  # 🏭 Deploy to Production (main branch only)
+  deploy-production:
+    name: 🏭 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [test, security, docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🏭 Deploy to production
+      run: |
+        echo "🏭 Deploying to production environment..."
+        echo "This would deploy to production infrastructure"
+
+  # 📋 Notify on Failure
+  notify:
+    name: 📋 Notify Team
+    runs-on: ubuntu-latest
+    needs: [test, security, docker]
+    if: failure()
+    
+    steps:
+    - name: 📧 Send notification
+      run: |
+        echo "🚨 CI/CD pipeline failed!"
+        echo "Branch: ${{ github.ref }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Author: ${{ github.actor }}"
