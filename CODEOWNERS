@@ -1,0 +1,29 @@
+# 👥 Code Owners for satware® AI MCP Proxy
+
+# Global ownership - Michael Wegener as lead architect
+* @satwareAG-ironMike
+
+# Core application files
+/lib/ @satwareAG-ironMike
+/bin/ @satwareAG-ironMike
+
+# Configuration and deployment
+/Dockerfile @satwareAG-ironMike
+/package.json @satwareAG-ironMike
+/pnpm-lock.yaml @satwareAG-ironMike
+
+# Documentation
+/docs/ @satwareAG-ironMike
+/README.md @satwareAG-ironMike
+/CONTRIBUTING.md @satwareAG-ironMike
+
+# CI/CD and workflows
+/.github/ @satwareAG-ironMike
+
+# Security-sensitive files (require additional review)
+/lib/auth.js @satwareAG-ironMike
+/.github/workflows/ @satwareAG-ironMike
+
+# Release and versioning
+/CHANGELOG.md @satwareAG-ironMike
+/package.json @satwareAG-ironMike

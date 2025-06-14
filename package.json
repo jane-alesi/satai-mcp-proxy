@@ -1,36 +1,74 @@
 {
-  "name": "@typingmind/mcp",
-  "version": "1.2.1",
-  "repository": "https://github.com/TypingMind/typingmind-mcp",
-  "description": "Model Context Protocol (MCP) servers runner for TypingMind",
+  "name": "@satware/satai-mcp-proxy",
+  "version": "2.0.0",
+  "repository": "https://github.com/jane-alesi/satai-mcp-proxy",
+  "description": "satware® AI MCP Proxy - Enterprise-grade Model Context Protocol server for the Alesi AGI ecosystem",
   "main": "lib/server.js",
   "bin": {
-    "@typingmind/mcp": "./bin/index.js"
+    "@satware/satai-mcp-proxy": "./bin/index.js",
+    "satai-mcp-proxy": "./bin/index.js"
   },
   "scripts": {
-    "start": "node bin/index.js"
+    "start": "node bin/index.js",
+    "dev": "node --watch bin/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "echo 'Build completed'",
+    "docker:build": "docker build -t satware/satai-mcp-proxy .",
+    "docker:run": "docker run -p 50880:50880 satware/satai-mcp-proxy"
   },
   "keywords": [
+    "satware",
     "ai",
     "mcp",
     "model",
     "context",
     "protocol",
-    "typingmind"
+    "alesi",
+    "agi",
+    "enterprise",
+    "proxy",
+    "chat.satware.ai"
   ],
-  "author": "TypingMind",
+  "author": "satware® AI Team <ai@satware.ai>",
   "license": "MIT",
+  "homepage": "https://satware.ai",
+  "bugs": {
+    "url": "https://github.com/jane-alesi/satai-mcp-proxy/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
     "chalk": "^4.1.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "json-stable-stringify": "^1.2.1"
+    "json-stable-stringify": "^1.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "winston": "^3.11.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
   "devDependencies": {
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "@types/jest": "^29.5.8"
+  },
+  "satware": {
+    "ecosystem": "alesi-agi",
+    "platform": "chat.satware.ai",
+    "version": "2.0.0",
+    "compatibility": {
+      "alesi-agents": ">=1.0.0",
+      "satware-auth": ">=2.0.0"
+    }
   }
 }
