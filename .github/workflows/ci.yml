@@ -21,6 +21,7 @@ jobs:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
       
     - name: 📦 Setup Node.js
@@ -46,7 +47,7 @@ jobs:
             echo "📝 Committing updated lockfile..."
             git add pnpm-lock.yaml
             git commit -m "chore: update pnpm-lock.yaml to match package.json"
-            git push
+            git push origin HEAD:${{ github.head_ref || github.ref_name }}
             echo "✅ Lockfile updated and committed successfully"
           else
             echo "ℹ️ No lockfile changes needed"
