@@ -11,18 +11,17 @@ env:
   PNPM_VERSION: '9'
 
 jobs:
-  # 🧪 Testing and Quality Checks
   test:
     name: 🧪 Test & Quality
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Allow auto-commit of lockfile updates
+      contents: write
     
     steps:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Full history for potential lockfile updates
+        fetch-depth: 0
       
     - name: 📦 Setup Node.js
       uses: actions/setup-node@v4
@@ -36,28 +35,17 @@ jobs:
         
     - name: 🔧 Install dependencies with lockfile auto-update
       run: |
-        # Try frozen lockfile first
         if ! pnpm install --frozen-lockfile; then
           echo "🔄 Lockfile outdated, updating..."
           pnpm install --no-frozen-lockfile
           
-          # Configure git for auto-commit
           git config --global user.name "satware® AI Lockfile Bot"
           git config --global user.email "lockfile@satware.ai"
           
-          # Check if lockfile changed
           if ! git diff --quiet pnpm-lock.yaml; then
             echo "📝 Committing updated lockfile..."
             git add pnpm-lock.yaml
-            git commit -m "chore: update pnpm-lock.yaml to match package.json
-
-- Auto-updated by CI pipeline
-- Ensures dependency consistency
-- Resolves frozen lockfile conflicts
-
-Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
-            
-            # Push the changes back
+            git commit -m "chore: update pnpm-lock.yaml to match package.json"
             git push
             echo "✅ Lockfile updated and committed successfully"
           else
@@ -76,7 +64,6 @@ Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
     - name: 📊 Check test coverage
       run: pnpm test:coverage || echo "Coverage not configured yet"
 
-  # 🔒 Security Scanning
   security:
     name: 🔒 Security Scan
     runs-on: ubuntu-latest
@@ -86,8 +73,7 @@ Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
       uses: actions/checkout@v4
       
     - name: 🔍 Run security audit
-      run: |
-        npm audit --audit-level=moderate || true
+      run: npm audit --audit-level=moderate || true
         
     - name: 🔍 Scan for secrets
       uses: trufflesecurity/trufflehog@main
@@ -96,7 +82,6 @@ Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
         base: main
         head: HEAD
 
-  # 🐳 Docker Build
   docker:
     name: 🐳 Docker Build
     runs-on: ubuntu-latest
@@ -118,7 +103,6 @@ Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  # 🚀 Deploy to Staging (develop branch only)
   deploy-staging:
     name: 🚀 Deploy to Staging
     runs-on: ubuntu-latest
@@ -135,7 +119,6 @@ Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
         echo "🚀 Deploying to staging environment..."
         echo "This would deploy to staging infrastructure"
         
-  # 🏭 Deploy to Production (main branch only)
   deploy-production:
     name: 🏭 Deploy to Production
     runs-on: ubuntu-latest
@@ -152,7 +135,6 @@ Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
         echo "🏭 Deploying to production environment..."
         echo "This would deploy to production infrastructure"
 
-  # 📋 Lockfile Status Report
   lockfile-status:
     name: 📋 Lockfile Status
     runs-on: ubuntu-latest
@@ -189,7 +171,6 @@ Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
         echo "🤖 Bot: satware® AI Lockfile Bot"
         echo "✨ Pattern: Inspired by satwareAG-ironMike/l1 repo"
 
-  # 📧 Notify on Failure
   notify:
     name: 📧 Notify Team
     runs-on: ubuntu-latest
