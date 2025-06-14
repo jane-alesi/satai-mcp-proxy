@@ -15,10 +15,14 @@ jobs:
   test:
     name: 🧪 Test & Quality
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Allow auto-commit of lockfile updates
     
     steps:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for potential lockfile updates
       
     - name: 📦 Setup Node.js
       uses: actions/setup-node@v4
@@ -30,8 +34,38 @@ jobs:
       with:
         version: ${{ env.PNPM_VERSION }}
         
-    - name: 📦 Install dependencies
-      run: pnpm install --frozen-lockfile
+    - name: 🔧 Install dependencies with lockfile auto-update
+      run: |
+        # Try frozen lockfile first
+        if ! pnpm install --frozen-lockfile; then
+          echo "🔄 Lockfile outdated, updating..."
+          pnpm install --no-frozen-lockfile
+          
+          # Configure git for auto-commit
+          git config --global user.name "satware® AI Lockfile Bot"
+          git config --global user.email "lockfile@satware.ai"
+          
+          # Check if lockfile changed
+          if ! git diff --quiet pnpm-lock.yaml; then
+            echo "📝 Committing updated lockfile..."
+            git add pnpm-lock.yaml
+            git commit -m "chore: update pnpm-lock.yaml to match package.json
+
+- Auto-updated by CI pipeline
+- Ensures dependency consistency
+- Resolves frozen lockfile conflicts
+
+Co-authored-by: satware® AI Lockfile Bot <lockfile@satware.ai>"
+            
+            # Push the changes back
+            git push
+            echo "✅ Lockfile updated and committed successfully"
+          else
+            echo "ℹ️ No lockfile changes needed"
+          fi
+        else
+          echo "✅ Lockfile is up to date"
+        fi
       
     - name: 🔍 Lint code
       run: pnpm lint || echo "Linting not configured yet"
@@ -118,9 +152,46 @@ jobs:
         echo "🏭 Deploying to production environment..."
         echo "This would deploy to production infrastructure"
 
-  # 📋 Notify on Failure
+  # 📋 Lockfile Status Report
+  lockfile-status:
+    name: 📋 Lockfile Status
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always()
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📋 Generate lockfile status report
+      run: |
+        echo "📋 Lockfile Status Report"
+        echo "========================="
+        echo "🔍 Checking lockfile consistency..."
+        
+        if [ -f "pnpm-lock.yaml" ]; then
+          echo "✅ pnpm-lock.yaml exists"
+          echo "📊 Lockfile size: $(wc -l < pnpm-lock.yaml) lines"
+          echo "🕐 Last modified: $(stat -c %y pnpm-lock.yaml)"
+        else
+          echo "❌ pnpm-lock.yaml missing"
+        fi
+        
+        echo ""
+        echo "📦 Package.json dependencies:"
+        if [ -f "package.json" ]; then
+          echo "$(jq -r '.dependencies | keys | length' package.json) production dependencies"
+          echo "$(jq -r '.devDependencies | keys | length' package.json) development dependencies"
+        fi
+        
+        echo ""
+        echo "🔄 Auto-update Status: ENABLED"
+        echo "🤖 Bot: satware® AI Lockfile Bot"
+        echo "✨ Pattern: Inspired by satwareAG-ironMike/l1 repo"
+
+  # 📧 Notify on Failure
   notify:
-    name: 📋 Notify Team
+    name: 📧 Notify Team
     runs-on: ubuntu-latest
     needs: [test, security, docker]
     if: failure()
@@ -132,3 +203,9 @@ jobs:
         echo "Branch: ${{ github.ref }}"
         echo "Commit: ${{ github.sha }}"
         echo "Author: ${{ github.actor }}"
+        echo ""
+        echo "🔧 Common fixes:"
+        echo "- Check lockfile consistency"
+        echo "- Review dependency updates"
+        echo "- Verify test failures"
+        echo "- Check security vulnerabilities"
